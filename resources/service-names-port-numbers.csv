@@ -14569,14 +14569,14 @@ pplayer-ctrl,,,Piano Player Remote Control,[Juraj_Zopp],[Juraj_Zopp],,,,,,Define
 pres,,tcp,Presence,,,,,[RFC3861],,,
 pres,,udp,Presence,,,,,[RFC3861],,,
 presence,,,Peer-to-peer messaging / Link-Local Messaging,[XMPP_Registrar],[XMPP_Registrar],,,,,,"Defined TXT keys: See http://www.xmpp.org/registrar/linklocal.html
-Note: Registration updated May 2007. Was formerly listed as ""iChat AV"" 
+Note: Registration updated May 2007. Was formerly listed as ""iChat AV""
 (Apple's IM client for Mac OS X) with TXT keys: txtvers, port.p2pj, phsh, vc,
 1st, AIM, msg, status, last When first shipped in Mac OS X 10.2, iChat's
 peer-to-peer messaging protocol was created to solve the problem of serverless
-messaging between peers on the same link.  However, there is nothing inherent 
-in the protocol that limits it to being only link-local; it was simply 
+messaging between peers on the same link.  However, there is nothing inherent
+in the protocol that limits it to being only link-local; it was simply
 an artifact of iChat in Mac OS X 10.2 using link-local Multicast DNS to
-discover peers. With the advent of Wide-Area DNS-SD, it is also possible 
+discover peers. With the advent of Wide-Area DNS-SD, it is also possible
 to use iChat's peer-to-peer messaging between machines on different links."
 print-caps,,,Retrieve a description of a device's print capabilities,[Troy_Bergstrand],[Troy_Bergstrand],,,,,,Defined TXT keys: None
 printopia,,tcp,Printopia Server,[Decisive_Tactics_Inc],[Chris_Kent],2011-10-24,2015-04-11,,,,"Defined TXT keys: uuid, vers, pvers"
