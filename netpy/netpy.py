@@ -6,6 +6,7 @@ import time
 from pymitter import EventEmitter
 
 from .constants import *
+import csv
 
 class NetPy(EventEmitter):
     def __init__(self):
@@ -35,7 +36,7 @@ class NetPy(EventEmitter):
     def set_ip(self, ip: str):
         self.ip = ip
 
-    def set_timeout(self, timeout=0.5):
+    def set_timeout(self, timeout=0.5+1):
         self.timeout = timeout
         self.socket.settimeout(timeout)
 
@@ -48,58 +49,77 @@ class NetPy(EventEmitter):
             self.socket.settimeout(self.timeout)
             self.method = ScanMethod.UDP
 
-    def set_prog(self):
-        self.process = subprocess.Popen(['C:\\Windows\\system32\\cmd.exe'])
+    # def set_prog(self):
+    #     self.process = subprocess.Popen(['C:\\Windows\\system32\\cmd.exe'])
 
-    def _scan(self, ports, port):
-        result = {"port": port,"stat": ScanStatus.FILTERED}
+    def _scan(self, push_port, port):
         try:
             self.socket.connect((self.ip, port))
             if self.method == ScanMethod.UDP:
                 self.socket.send(bytes(0))
                 self.socket.recv(1024)
 
-            result["stat"] = ScanStatus.OPEN
-            ports.append(result)
-            self.emit("scan", result)
+            push_port(port, ScanStatus.OPEN)
 
         except socket.timeout:
             if self.method == ScanMethod.UDP:
-                result["stat"] = ScanStatus.OPEN_FILTERED
+                push_port(port, ScanStatus.OPEN_FILTERED)
             elif self.method == ScanMethod.TCP:
-                result["stat"] = ScanStatus.FILTERED
-            ports.append(result)
-            self.emit("scan", result)
+                push_port(port, ScanStatus.FILTERED)
 
         except socket.error:
             if self.method == ScanMethod.UDP:
-                result["stat"] = ScanStatus.CLOSED_FILTERED
+                push_port(port, ScanStatus.CLOSED_FILTERED)
             elif self.method == ScanMethod.TCP:
-                result["stat"] = ScanStatus.CLOSED
-            ports.append(result)
-            self.emit("scan", result)
+                push_port(port, ScanStatus.CLOSED)
 
         finally:
             pass
 
     def scan(self):
         ports = []
-        count = 0
+        threads = []
+
+        f = open("./resources/service-names-port-numbers.csv", "r")
+        serices = [{k: v for k, v in row.items()}
+        for row in csv.DictReader(f, skipinitialspace=True)]
+        f.close()
+
+        def push_port(port, status):
+            result = {"port": port, "status": status}
+            found = False
+
+            if status != ScanStatus.CLOSED:
+                for service in serices:
+                    if (service["Port Number"]) == str(port) and service["Transport Protocol"].upper() == self.method.name:
+                        result["service"] = service["Service Name"]
+                        result["description"] = service["Description"]
+                        result["notes"] = service["Assignment Notes"][:100]
+                        found = True
+
+            if not found:
+                result["service"] = "unknown"
+                result["description"] = "unknown"
+                result["notes"] = "unknown"
+
+            ports.append(result)
+            self.emit("scan", result)
 
         if self.port_start == self.port_end:
-            self._scan(ports, self.port_start)
+            self._scan(push_port, self.port_start)
 
-        for port in range(self.port_start, self.port_end):
-            # threading.Thread(target=self._scan, args=(ports, port,)).start()
-            self._scan(ports, port)
-            time.sleep(0.1)
-            count += 1
-
-        # while len(ports) != count:
-        #     time.sleep(0.1)
+        else:
+            for port in range(self.port_start, self.port_end):
+                # thread = threading.Thread(target=self._scan, args=(push_port, port,))
+                # thread.start()
+                # threads.append(thread)
+                self._scan(push_port, port)
 
         self.emit("scan_end", ports)
         self.stop()
+
+        # for thread in threads:
+        #     thread.join()
 
         return ports
 

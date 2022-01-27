@@ -13,3 +13,4 @@ class ScanStatus(Enum):
     FILTERED = 'Filtered'
     OPEN_FILTERED = 'Open | Filtered'
     CLOSED_FILTERED = 'Closed | Filtered'
+    UNKNOWN = 'Unknown'
